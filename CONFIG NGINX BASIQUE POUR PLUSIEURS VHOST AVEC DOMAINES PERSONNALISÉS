@@ -2,6 +2,8 @@
 # avec possibilité de travailler avec des noms de domaine personnalisés.
 # NOTE: Chaque bloc server peut être séparé dans un fichier; ceci est même conseillé quand
 # on a des configurations un peu plus avancées à faire pour chaque site/application
+# Ce fichier doit se trouver dans le répertoire /etc/nginx/sites-available/ et
+# doit avoir un lien symbolique dans /etc/nginx/sites-enabled/
 
 #HOST PRINCIPAL (par défaut)
 server {
