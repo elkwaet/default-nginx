@@ -1,0 +1,104 @@
+# Ceci est juste un exemple des de configuration des sites d'un serveur web NGINX en local
+# avec possibilité de travailler avec des noms de domaine personnalisés.
+# NOTE: Chaque bloc server peut être séparé dans un fichier; ceci est même conseillé quand
+# on a des configurations un peu plus avancées à faire pour chaque site/application
+
+#HOST PRINCIPAL (par défaut)
+server {
+	listen 80 default_server;
+	listen [::]:80 default_server;
+	root /var/www/html;
+	index index.html; ##Ce fichier "index.html" dans /var/www/html peut être retouché à vos soins
+
+	# Domaine d'accès en navigateur "http://localhost"
+	server_name localhost;
+
+	location / {
+		try_files $uri $uri/ =404;
+	}
+}
+
+#HOST VIRTUEL A (une application PHP)
+server {
+	listen 80;
+	listen [::]:80;
+	root /repertoire/racine/de/l'application/siteA;
+	index index index.php index.html index.htm;
+
+	# Domaine d'accès en navigateur "http://rataplan.start"
+	server_name rataplan.start; ##Tout en s'assurant d'avoir renseigner "rataplan.start" comme domaine secondaire autorisé dans /etc/hosts
+
+	location / {
+		try_files $uri $uri/ =404;
+		}
+
+	location ~ \.php$ {
+		# Dans le cas où vous utilisez le socket principal php-fpm
+		fastcgi_pass unix:/var/run/php/php7.0-fpm.sock;
+			fastcgi_split_path_info ^(.+\.php)(/.+)$;
+			fastcgi_index index.php;
+			fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+			include fastcgi_params;
+
+
+		# La directive "try_files" peut varier en fonction de votre environnement/framework/cms PHP s'il y a des fichiers PHP à la racine
+		try_files $uri $uri/ =404;
+
+		}
+
+	location ~ /\.ht {
+		deny all;
+		}
+
+}
+
+#HOST VIRTUEL B (un site HTML5/CSS3)
+server {
+	listen 80;
+	listen [::]:80;
+	root /repertoire/racine/du/siteB;
+	index index.html index.htm;
+
+	# Domaine d'accès en navigateur "http://extra.labo"
+	server_name extra.labo; ##Tout en s'assurant d'avoir renseigner "extra.labo" comme domaine secondaire autorisé dans /etc/hosts
+
+	location / {
+		try_files $uri $uri/ =404;
+		}
+
+	location ~ /\.ht {
+		deny all;
+		}
+
+}
+
+#HOST VIRTUEL C (un site HTML5/CSS3 avec Liste de contenus pour accès/téléchargement public)
+server {
+	listen 80;
+	listen [::]:80;
+	root /repertoire/racine/du/siteC;
+	index index.html index.htm;
+
+	# # Domaine d'accès en navigateur "http://ressources.good"
+	server_name ressources.good; ##Tout en s'assurant d'avoir renseigner "ressources.good" comme domaine secondaire autorisé dans /etc/hosts
+
+	location / {
+		try_files $uri $uri/ /index.php?q=$uri$args;
+		autoindex on;
+		}
+
+	location ~ /\.ht {
+		deny all;
+		}
+
+}
+
+
+######### LE FICHIER HOSTS (/etc/hosts) SE PRÉSENTERA COMME CECI:############
+	#127.0.0.1		localhost rataplan.start extra.labo ressources.good
+	#127.0.1.1		nomdevotremachinelinux.localhost	nomdevotremachinelinux
+	# # The following lines are desirable for IPv6 capable hosts
+	#::1     localhost ip6-localhost ip6-loopback
+	#ff02::1 ip6-allnodes
+	#ff02::2 ip6-allrouters
+##############################################################################
